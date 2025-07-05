@@ -819,8 +819,11 @@ where
                     HeaderValue::from_static("text/plain; version=0.0.4; charset=utf-8"),
                 );
 
+                let metrics: String = inner.metrics();
+                this.inner.http_requests_total.reset();
+
                 EitherBody::right(StreamLog {
-                    body: inner.metrics(),
+                    body: metrics,
                     size: 0,
                     clock: time,
                     inner,
