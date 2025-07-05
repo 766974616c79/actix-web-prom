@@ -333,7 +333,7 @@ use actix_web::{
 use futures_core::ready;
 use pin_project_lite::pin_project;
 use prometheus::{
-    Encoder, GaugeVec, HistogramOpts, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder
+    Encoder, IntGaugeVec, HistogramOpts, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder
 };
 
 use regex::RegexSet;
@@ -457,7 +457,7 @@ impl PrometheusMetricsBuilder {
         .namespace(&self.namespace)
         .const_labels(self.const_labels.clone());
 
-        let http_requests_total = GaugeVec::new(http_requests_total_opts, labels)?;
+        let http_requests_total = IntGaugeVec::new(http_requests_total_opts, labels)?;
 
         let http_requests_duration_seconds_opts = HistogramOpts::new(
             self.metrics_configuration
@@ -602,7 +602,7 @@ impl ActixMetricsConfiguration {
 ///     status): the request duration for all HTTP requests handled by the actix
 ///     `HttpServer`.
 pub struct PrometheusMetrics {
-    pub(crate) http_requests_total: GaugeVec,
+    pub(crate) http_requests_total: IntGaugeVec,
     pub(crate) http_requests_duration_seconds: HistogramVec,
 
     /// exposed registry for custom prometheus metrics
@@ -812,6 +812,7 @@ where
             // automagically. This way the user does not need to set the middleware *AND*
             // an endpoint to serve middleware results. The user is only required to set
             // the middleware and tell us what the endpoint should be.
+            println!("path: {} {}", path, inner.matches(&path, &method));
             if inner.matches(&path, &method) {
                 head.status = StatusCode::OK;
                 head.headers.insert(
@@ -820,7 +821,8 @@ where
                 );
 
                 let metrics: String = inner.metrics();
-                this.inner.http_requests_total.reset();
+                inner.http_requests_total.reset();
+                inner.http_requests_duration_seconds.reset();
 
                 EitherBody::right(StreamLog {
                     body: metrics,
