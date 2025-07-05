@@ -333,7 +333,7 @@ use actix_web::{
 use futures_core::ready;
 use pin_project_lite::pin_project;
 use prometheus::{
-    Encoder, HistogramOpts, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder,
+    Encoder, GaugeVec, HistogramOpts, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder
 };
 
 use regex::RegexSet;
@@ -457,7 +457,7 @@ impl PrometheusMetricsBuilder {
         .namespace(&self.namespace)
         .const_labels(self.const_labels.clone());
 
-        let http_requests_total = IntCounterVec::new(http_requests_total_opts, labels)?;
+        let http_requests_total = GaugeVec::new(http_requests_total_opts, labels)?;
 
         let http_requests_duration_seconds_opts = HistogramOpts::new(
             self.metrics_configuration
@@ -602,7 +602,7 @@ impl ActixMetricsConfiguration {
 ///     status): the request duration for all HTTP requests handled by the actix
 ///     `HttpServer`.
 pub struct PrometheusMetrics {
-    pub(crate) http_requests_total: IntCounterVec,
+    pub(crate) http_requests_total: GaugeVec,
     pub(crate) http_requests_duration_seconds: HistogramVec,
 
     /// exposed registry for custom prometheus metrics
