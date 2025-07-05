@@ -812,7 +812,6 @@ where
             // automagically. This way the user does not need to set the middleware *AND*
             // an endpoint to serve middleware results. The user is only required to set
             // the middleware and tell us what the endpoint should be.
-            println!("path: {} {}", path, inner.matches(&path, &method));
             if inner.matches(&path, &method) {
                 head.status = StatusCode::OK;
                 head.headers.insert(
